@@ -75,3 +75,25 @@ def calculate_payroll(worker_id: int):
         "daily_rate": worker.daily_rate,
         "total_pay": total_pay
     }
+
+@app.get("/payroll")
+def calculate_all_payroll():
+    payroll_list = []
+
+    for worker_id, worker in enumerate(workers):
+        days_present = sum(
+            1 for r in attendance_records
+            if r.worker_id == worker_id and r.status == "present"
+        )
+
+        total_pay = days_present * worker.daily_rate
+
+        payroll_list.append({
+            "worker_id": worker_id,
+            "name": worker.name,
+            "days_present": days_present,
+            "daily_rate": worker.daily_rate,
+            "total_pay": total_pay
+        })
+
+    return payroll_list
