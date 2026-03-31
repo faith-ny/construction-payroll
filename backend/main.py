@@ -4,7 +4,8 @@ from datetime import date
 
 app = FastAPI()
 
-# Worker Model
+# ---------------------------
+# Models
 # ---------------------------
 class Worker(BaseModel):
     name: str
@@ -12,20 +13,16 @@ class Worker(BaseModel):
     skill: str
     daily_rate: float
 
-workers = []
-
-# ---------------------------
-# Attendance Model
-# ---------------------------
 class Attendance(BaseModel):
     worker_id: int
     date: date
-    status: str  # present, absent
+    status: str  # present or absent
 
+workers = []
 attendance_records = []
 
 # ---------------------------
-# Routes
+# Home
 # ---------------------------
 @app.get("/")
 def home():
@@ -37,7 +34,7 @@ def home():
 @app.post("/workers")
 def add_worker(worker: Worker):
     workers.append(worker)
-    return {"message": "Worker added successfully", "worker": worker}
+    return {"message": "Worker added", "worker": worker}
 
 @app.get("/workers")
 def get_workers():
@@ -51,11 +48,30 @@ def mark_attendance(record: Attendance):
     attendance_records.append(record)
     return {"message": "Attendance recorded", "record": record}
 
-@app.get("/attendance")
-def get_all_attendance():
-    return attendance_records
-
 @app.get("/attendance/{worker_id}")
 def get_worker_attendance(worker_id: int):
-    worker_logs = [r for r in attendance_records if r.worker_id == worker_id]
-    return worker_logs
+    return [r for r in attendance_records if r.worker_id == worker_id]
+
+# ---------------------------
+# Payroll Endpoint
+# ---------------------------
+@app.get("/payroll/{worker_id}")
+def calculate_payroll(worker_id: int):
+    if worker_id >= len(workers):
+        return {"error": "Worker not found"}
+
+    worker = workers[worker_id]
+
+    days_present = sum(
+        1 for r in attendance_records
+        if r.worker_id == worker_id and r.status == "present"
+    )
+
+    total_pay = days_present * worker.daily_rate
+
+    return {
+        "worker": worker.name,
+        "days_present": days_present,
+        "daily_rate": worker.daily_rate,
+        "total_pay": total_pay
+    }
