@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import date
+from fastapi.responses import StreamingResponse
+import csv
+import io
+
 
 app = FastAPI()
 
@@ -55,6 +59,39 @@ def get_worker_attendance(worker_id: int):
 # ---------------------------
 # Payroll Endpoint
 # ---------------------------
+
+@app.get("/payroll/export")
+def export_payroll():
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # CSV header
+    writer.writerow(["Worker ID", "Name", "Days Present", "Daily Rate", "Total Pay"])
+
+    for worker_id, worker in enumerate(workers):
+        days_present = sum(
+            1 for r in attendance_records
+            if r.worker_id == worker_id and r.status == "present"
+        )
+
+        total_pay = days_present * worker.daily_rate
+
+        writer.writerow([
+            worker_id,
+            worker.name,
+            days_present,
+            worker.daily_rate,
+            total_pay
+        ])
+
+    output.seek(0)
+
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=payroll_report.csv"}
+    )
+
 @app.get("/payroll/{worker_id}")
 def calculate_payroll(worker_id: int):
     if worker_id >= len(workers):
@@ -97,3 +134,4 @@ def calculate_all_payroll():
         })
 
     return payroll_list
+
