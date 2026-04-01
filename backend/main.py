@@ -48,3 +48,24 @@ def add_worker(worker: WorkerCreate, db: Session = Depends(get_db)):
 @app.get("/workers")
 def get_workers(db: Session = Depends(get_db)):
     return db.query(models.Worker).all()
+
+# ---------------------------
+# Attendance Endpoints
+# ---------------------------
+@app.post("/attendance")
+def mark_attendance(record: AttendanceCreate, db: Session = Depends(get_db)):
+    db_record = models.Attendance(**record.dict())
+    db.add(db_record)
+    db.commit()
+    db.refresh(db_record)
+    return db_record
+
+@app.get("/attendance")
+def get_all_attendance(db: Session = Depends(get_db)):
+    return db.query(models.Attendance).all()
+
+@app.get("/attendance/{worker_id}")
+def get_worker_attendance(worker_id: int, db: Session = Depends(get_db)):
+    return db.query(models.Attendance).filter(
+        models.Attendance.worker_id == worker_id
+    ).all()
