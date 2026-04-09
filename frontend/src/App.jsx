@@ -72,6 +72,28 @@ function App() {
     }
   };
 
+  const markAttendance = async (worker_id) => {
+    try {
+      await fetch(`${API_BASE}/attendance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          worker_id: worker_id,
+          date: new Date().toISOString().split("T")[0],
+          status: "present"
+        })
+      });
+  
+      alert("Attendance marked!");
+  
+    } catch (err) {
+      console.error(err);
+      setError("Failed to mark attendance");
+    }
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Construction Payroll</h1>
@@ -117,20 +139,19 @@ function App() {
         <p>No workers found</p>
       ) : !loading && !error ? (
         workers.map((worker) => (
-          <div
-            key={worker.id}
-            style={{
-              background: "#f2f2f2",
-              padding: "10px",
-              margin: "10px 0",
-              borderRadius: "8px",
-            }}
-          >
-            <b>{worker.name}</b>
-            <br />
-            {worker.skill}
-            <br />
-            KES {worker.daily_rate}
+          <div key={worker.id} style={{
+            background: "#f2f2f2",
+            padding: "10px",
+            margin: "10px 0",
+            borderRadius: "8px"
+          }}>
+            <b>{worker.name}</b><br />
+            {worker.skill}<br />
+            KES {worker.daily_rate}<br /><br />
+        
+            <button onClick={() => markAttendance(worker.id)}>
+              Mark Present
+            </button>
           </div>
         ))
       ) : null}
