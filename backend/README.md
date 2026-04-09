@@ -45,7 +45,7 @@ This system provides:
 2. Install dependencies:
 
    ```
-   pip install fastapi uvicorn
+   pip install -r backend/requirements.txt
    ```
 3. Run the server:
 

@@ -1,14 +1,29 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import date
 
-from backend import models
-from backend.database import SessionLocal, engine
+try:
+    # Works when launched from project root: uvicorn backend.main:app --reload
+    from backend import models
+    from backend.database import SessionLocal, engine
+except ModuleNotFoundError:
+    # Works when launched from backend folder: uvicorn main:app --reload
+    import models
+    from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------------------------
 # Database Dependency

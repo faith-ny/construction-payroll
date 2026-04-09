@@ -1,5 +1,10 @@
 from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
-from backend.database import Base
+try:
+    # Works when launched from project root
+    from backend.database import Base
+except ModuleNotFoundError:
+    # Works when launched from backend folder
+    from database import Base
 
 class Worker(Base):
     __tablename__ = "workers"
