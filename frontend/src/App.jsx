@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// Dev: Vite proxies /api -> backend (same origin, no CORS). Override with VITE_API_URL if needed.
+// Dev: Vite proxies /api -> backend (same origin, no CORS).
 const API_BASE =
   import.meta.env.VITE_API_URL ??
   (import.meta.env.DEV ? "/api" : "http://127.0.0.1:8000");
@@ -9,28 +9,101 @@ function App() {
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    skill: "",
+    daily_rate: "",
+  });
 
-  useEffect(() => {
+  const loadWorkers = async () => {
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE}/workers`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setWorkers(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Failed to load workers:", err);
-        setError(err.message || "Request failed");
-      })
-      .finally(() => setLoading(false));
+    try {
+      const res = await fetch(`${API_BASE}/workers`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setWorkers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load workers:", err);
+      setError(err.message || "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadWorkers();
   }, []);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const addWorker = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/workers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...form,
+          daily_rate: parseFloat(form.daily_rate),
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add worker");
+
+      setForm({
+        name: "",
+        phone: "",
+        skill: "",
+        daily_rate: "",
+      });
+
+      await loadWorkers();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to add worker");
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>Construction Payroll</h1>
+
+      <h2>Add Worker</h2>
+      <input
+        name="name"
+        placeholder="Name"
+        value={form.name}
+        onChange={handleChange}
+      />
+      <input
+        name="phone"
+        placeholder="Phone"
+        value={form.phone}
+        onChange={handleChange}
+      />
+      <input
+        name="skill"
+        placeholder="Skill"
+        value={form.skill}
+        onChange={handleChange}
+      />
+      <input
+        name="daily_rate"
+        placeholder="Daily Rate"
+        value={form.daily_rate}
+        onChange={handleChange}
+      />
+      <button onClick={addWorker} style={{ marginTop: "10px" }}>
+        Add Worker
+      </button>
 
       <h2>Workers</h2>
 
@@ -44,14 +117,19 @@ function App() {
         <p>No workers found</p>
       ) : !loading && !error ? (
         workers.map((worker) => (
-          <div key={worker.id} style={{
-            background: "#f2f2f2",
-            padding: "10px",
-            margin: "10px 0",
-            borderRadius: "8px"
-          }}>
-            <b>{worker.name}</b><br />
-            {worker.skill}<br />
+          <div
+            key={worker.id}
+            style={{
+              background: "#f2f2f2",
+              padding: "10px",
+              margin: "10px 0",
+              borderRadius: "8px",
+            }}
+          >
+            <b>{worker.name}</b>
+            <br />
+            {worker.skill}
+            <br />
             KES {worker.daily_rate}
           </div>
         ))
