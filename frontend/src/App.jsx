@@ -94,6 +94,21 @@ function App() {
     }
   };
 
+  const viewPayroll = async (worker_id) => {
+    try {
+      const res = await fetch(`${API_BASE}/payroll/${worker_id}`);
+      const data = await res.json();
+  
+      alert(
+        `${data.name}\nDays Present: ${data.days_present}\nTotal Pay: KES ${data.total_pay}`
+      );
+  
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch payroll");
+    }
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Construction Payroll</h1>
@@ -150,8 +165,15 @@ function App() {
             KES {worker.daily_rate}<br /><br />
         
             <button onClick={() => markAttendance(worker.id)}>
-              Mark Present
-            </button>
+  Mark Present
+</button>
+
+<button 
+  onClick={() => viewPayroll(worker.id)} 
+  style={{ marginLeft: "10px" }}
+>
+  View Payroll
+</button>
           </div>
         ))
       ) : null}
