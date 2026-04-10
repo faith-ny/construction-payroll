@@ -23,3 +23,12 @@ class Attendance(Base):
     worker_id = Column(Integer, ForeignKey("workers.id"))
     date = Column(Date)
     status = Column(String)
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    worker_id = Column(Integer, ForeignKey("workers.id"))
+    amount = Column(Float)
+    method = Column(String)  # cash / openfloat / boya
+    date = Column(Date)

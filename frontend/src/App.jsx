@@ -109,6 +109,29 @@ function App() {
     }
   };
 
+  const recordPayment = async (worker_id) => {
+    try {
+      await fetch(`${API_BASE}/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          worker_id: worker_id,
+          amount: 3000, // we will make this dynamic later
+          method: "openfloat",
+          date: new Date().toISOString().split("T")[0]
+        })
+      });
+  
+      alert("Payment recorded!");
+  
+    } catch (err) {
+      console.error(err);
+      setError("Failed to record payment");
+    }
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Construction Payroll</h1>
@@ -173,6 +196,13 @@ function App() {
   style={{ marginLeft: "10px" }}
 >
   View Payroll
+</button>
+
+<button 
+  onClick={() => recordPayment(worker.id)} 
+  style={{ marginLeft: "10px" }}
+>
+  Record Payment
 </button>
           </div>
         ))

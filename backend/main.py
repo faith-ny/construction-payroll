@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import date
 
+
 try:
     # Works when launched from project root: uvicorn backend.main:app --reload
     from backend import models
@@ -48,6 +49,13 @@ class AttendanceCreate(BaseModel):
     worker_id: int
     date: date
     status: str
+
+class TransactionCreate(BaseModel):
+    worker_id: int
+    amount: float
+    method: str
+    date: date
+
 
 # ---------------------------
 # Worker Endpoints
@@ -135,3 +143,25 @@ def calculate_all_payroll(db: Session = Depends(get_db)):
         })
 
     return payroll_list
+
+@app.post("/transactions")
+def create_transaction(transaction: TransactionCreate):
+    db = SessionLocal()
+
+    new_transaction = models.Transaction(
+        worker_id=transaction.worker_id,
+        amount=transaction.amount,
+        method=transaction.method,
+        date=transaction.date
+    )
+
+    db.add(new_transaction)
+    db.commit()
+    db.refresh(new_transaction)
+
+    return new_transaction
+
+@app.get("/transactions")
+def get_transactions():
+    db = SessionLocal()
+    return db.query(models.Transaction).all()
