@@ -15,6 +15,7 @@ function App() {
     skill: "",
     daily_rate: "",
   });
+  const [transactions, setTransactions] = useState([]);
 
   const loadWorkers = async () => {
     setLoading(true);
@@ -33,7 +34,24 @@ function App() {
   };
 
   useEffect(() => {
-    loadWorkers();
+    setLoading(true);
+    setError(null);
+  
+    fetch(`${API_BASE}/workers`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setWorkers(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("Failed to load workers:", err);
+        setError(err.message || "Request failed");
+      })
+      .finally(() => setLoading(false));
+  
+    loadTransactions(); 
   }, []);
 
   const handleChange = (e) => {
@@ -132,6 +150,26 @@ function App() {
     }
   };
 
+  const loadTransactions = () => {
+    fetch(`${API_BASE}/transactions`)
+      .then(res => res.json())
+      .then(data => setTransactions(data));
+  };
+
+  const totalSpent = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+
+const cashTotal = transactions
+  .filter(tx => tx.method === "cash")
+  .reduce((sum, tx) => sum + tx.amount, 0);
+
+const openfloatTotal = transactions
+  .filter(tx => tx.method === "openfloat")
+  .reduce((sum, tx) => sum + tx.amount, 0);
+
+const boyaTotal = transactions
+  .filter(tx => tx.method === "boya")
+  .reduce((sum, tx) => sum + tx.amount, 0);
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Construction Payroll</h1>
@@ -190,6 +228,39 @@ function App() {
             <button onClick={() => markAttendance(worker.id)}>
   Mark Present
 </button>
+
+<h2 style={{ marginTop: "40px" }}>Spending Dashboard</h2>
+
+<div style={{
+  background: "#f9f9f9",
+  padding: "15px",
+  borderRadius: "10px"
+}}>
+  <p><b>Total Spent:</b> KES {totalSpent}</p>
+  <p>Cash: KES {cashTotal}</p>
+  <p>Openfloat: KES {openfloatTotal}</p>
+  <p>Boya: KES {boyaTotal}</p>
+</div>
+
+<h2 style={{ marginTop: "40px" }}>Transactions</h2>
+
+{transactions.length === 0 ? (
+  <p>No transactions yet</p>
+) : (
+  transactions.map((tx) => (
+    <div key={tx.id} style={{
+      background: "#e8f0fe",
+      padding: "10px",
+      margin: "10px 0",
+      borderRadius: "8px"
+    }}>
+      Worker ID: {tx.worker_id} <br />
+      Amount: KES {tx.amount} <br />
+      Method: {tx.method} <br />
+      Date: {tx.date}
+    </div>
+  ))
+)}
 
 <button 
   onClick={() => viewPayroll(worker.id)} 
