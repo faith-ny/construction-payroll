@@ -12,6 +12,8 @@ Small and medium-sized contractors often rely on:
 - Manual payroll calculations (spreadsheets or paper)
 - Individual mobile money payments (time-consuming)
 - Multiple disconnected tools for tracking workers and expenses
+- expensive subscription based crm for small contractors
+  
 
 This leads to:
 
@@ -29,6 +31,7 @@ This platform combines:
 - Payroll automation
 - Bulk payment processing
 - Project-based cost tracking
+- pay as you go system that only charges a standard fee when conducting transactions eg standard fee for bulk payment of workers
 
 All within a single system.
 
