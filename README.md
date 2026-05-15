@@ -140,7 +140,7 @@ npm run dev
  Author
 
 Faith Nyambura
-Aspiring Fintech Software Engineer
+Aspiring Fintech Analyst
 
 ---
 
